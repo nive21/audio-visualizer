@@ -36,47 +36,57 @@ function drawVisualizer(data) {
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
   const numPoints = data.length;
-  const numRadials = 6; // Ensure 6 radials are used
+  const numRadials = 6;
   const maxRadius = Math.min(centerX, centerY) * 0.6;
 
   ctx.lineWidth = 2;
   ctx.strokeStyle = "#ffcc00";
 
+  // Draw each radial line and its waves
   for (let j = 0; j < numRadials; j++) {
-    const angle = (Math.PI * 2 * j) / numRadials; // Evenly space 6 radials
+    const angle = (Math.PI * 2 * j) / numRadials;
     const cosA = Math.cos(angle);
     const sinA = Math.sin(angle);
 
+    // Draw positive wave
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
-      const normalizedT = (i / numPoints) * 2 - 1; // Normalize -1 to 1
-      const amplitude = (data[i] / 255) * maxRadius * 0.3; // Scale amplitude
+      const normalizedT = (i / numPoints) * 2 - 1; // -1 to 1
+      const amplitude = (data[i] / 255) * maxRadius * 0.3;
 
-      // Compute X along radial line
+      // Calculate position along the radial line
       const radialX = centerX + normalizedT * maxRadius * cosA;
-      const waveOffset = Math.sin(normalizedT * Math.PI * 2) * amplitude;
+      const radialY = centerY + normalizedT * maxRadius * sinA;
 
-      // Draw wave on both positive & negative Y-axis
-      const y1 = centerY + waveOffset * sinA;
-      const y2 = centerY - waveOffset * sinA;
+      // Add wave displacement perpendicular to the radial (positive side)
+      const waveX =
+        radialX - amplitude * Math.sin(normalizedT * Math.PI * 2) * sinA;
+      const waveY =
+        radialY + amplitude * Math.sin(normalizedT * Math.PI * 2) * cosA;
 
-      if (i === 0) ctx.moveTo(radialX, y1);
-      else ctx.lineTo(radialX, y1);
+      if (i === 0) ctx.moveTo(waveX, waveY);
+      else ctx.lineTo(waveX, waveY);
     }
     ctx.stroke();
 
-    // Mirror the wave on the opposite side of the radial
+    // Draw negative wave
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
-      const normalizedT = (i / numPoints) * 2 - 1;
+      const normalizedT = (i / numPoints) * 2 - 1; // -1 to 1
       const amplitude = (data[i] / 255) * maxRadius * 0.3;
 
+      // Calculate position along the radial line
       const radialX = centerX + normalizedT * maxRadius * cosA;
-      const waveOffset = Math.sin(normalizedT * Math.PI * 2) * amplitude;
-      const mirroredY = centerY - waveOffset * sinA;
+      const radialY = centerY + normalizedT * maxRadius * sinA;
 
-      if (i === 0) ctx.moveTo(radialX, mirroredY);
-      else ctx.lineTo(radialX, mirroredY);
+      // Add wave displacement perpendicular to the radial (negative side)
+      const waveX =
+        radialX + amplitude * Math.sin(normalizedT * Math.PI * 2) * sinA;
+      const waveY =
+        radialY - amplitude * Math.sin(normalizedT * Math.PI * 2) * cosA;
+
+      if (i === 0) ctx.moveTo(waveX, waveY);
+      else ctx.lineTo(waveX, waveY);
     }
     ctx.stroke();
   }
