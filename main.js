@@ -1,44 +1,21 @@
 const audio = document.getElementById("audio");
 const playButton = document.getElementById("playButton");
 
-// Set up audio context
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 const analyser = audioCtx.createAnalyser();
 const source = audioCtx.createMediaElementSource(audio);
 source.connect(analyser);
 analyser.connect(audioCtx.destination);
-analyser.fftSize = 64;
+analyser.fftSize = 256;
 
 const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-// Set up D3 SVG container
-const svg = d3
-  .select("body")
-  .append("svg")
-  .attr("width", window.innerWidth)
-  .attr("height", window.innerHeight);
+const canvas = document.createElement("canvas");
+document.body.appendChild(canvas);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const ctx = canvas.getContext("2d");
 
-const numCircles = dataArray.length;
-const circles = svg
-  .selectAll("circle")
-  .data(dataArray)
-  .enter()
-  .append("circle")
-  .attr(
-    "cx",
-    (d, i) =>
-      window.innerWidth / 2 + Math.sin((i / numCircles) * 2 * Math.PI) * 200
-  )
-  .attr(
-    "cy",
-    (d, i) =>
-      window.innerHeight / 2 + Math.cos((i / numCircles) * 2 * Math.PI) * 200
-  )
-  .attr("r", 5)
-  .attr("fill", (d, i) => `hsl(${(i / numCircles) * 360}, 100%, 50%)`)
-  .attr("opacity", 0.7);
-
-// Start Audio on Button Click
 playButton.addEventListener("click", () => {
   audioCtx.resume().then(() => {
     audio.play();
@@ -47,13 +24,60 @@ playButton.addEventListener("click", () => {
   });
 });
 
-// Animation Loop
 function animate() {
   requestAnimationFrame(animate);
   analyser.getByteFrequencyData(dataArray);
 
-  circles
-    .data(dataArray)
-    .attr("r", (d) => 5 + d / 50)
-    .attr("fill", (d) => `hsl(${d}, 100%, 50%)`);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawVisualizer(dataArray);
+}
+
+function drawVisualizer(data) {
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const numPoints = data.length;
+  const numRadials = 6; // Ensure 6 radials are used
+  const maxRadius = Math.min(centerX, centerY) * 0.6;
+
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#ffcc00";
+
+  for (let j = 0; j < numRadials; j++) {
+    const angle = (Math.PI * 2 * j) / numRadials; // Evenly space 6 radials
+    const cosA = Math.cos(angle);
+    const sinA = Math.sin(angle);
+
+    ctx.beginPath();
+    for (let i = 0; i < numPoints; i++) {
+      const normalizedT = (i / numPoints) * 2 - 1; // Normalize -1 to 1
+      const amplitude = (data[i] / 255) * maxRadius * 0.3; // Scale amplitude
+
+      // Compute X along radial line
+      const radialX = centerX + normalizedT * maxRadius * cosA;
+      const waveOffset = Math.sin(normalizedT * Math.PI * 2) * amplitude;
+
+      // Draw wave on both positive & negative Y-axis
+      const y1 = centerY + waveOffset * sinA;
+      const y2 = centerY - waveOffset * sinA;
+
+      if (i === 0) ctx.moveTo(radialX, y1);
+      else ctx.lineTo(radialX, y1);
+    }
+    ctx.stroke();
+
+    // Mirror the wave on the opposite side of the radial
+    ctx.beginPath();
+    for (let i = 0; i < numPoints; i++) {
+      const normalizedT = (i / numPoints) * 2 - 1;
+      const amplitude = (data[i] / 255) * maxRadius * 0.3;
+
+      const radialX = centerX + normalizedT * maxRadius * cosA;
+      const waveOffset = Math.sin(normalizedT * Math.PI * 2) * amplitude;
+      const mirroredY = centerY - waveOffset * sinA;
+
+      if (i === 0) ctx.moveTo(radialX, mirroredY);
+      else ctx.lineTo(radialX, mirroredY);
+    }
+    ctx.stroke();
+  }
 }
