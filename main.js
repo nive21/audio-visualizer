@@ -38,16 +38,16 @@ function drawVisualizer(data, frameCount) {
   const centerY = canvas.height / 2;
   const numPoints = data.length;
   const numRadials = 10;
-  const maxRadius = Math.min(centerX, centerY) * 0.7;
+  const maxRadius = Math.min(centerX, centerY) * 0.9;
 
   // 🌟 Fading Effect (Before Drawing)
-  ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // Retains past gradients longer
+  ctx.fillStyle = "rgba(0, 0, 0, 0.02)"; // Retains past gradients longer
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 1.4;
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
-  ctx.shadowBlur = 10;
+  ctx.shadowBlur = 100;
   ctx.shadowColor = "rgba(255, 255, 255, 0.7)"; // Glow effect
 
   for (let j = 0; j < numRadials; j++) {
@@ -56,25 +56,26 @@ function drawVisualizer(data, frameCount) {
     const sinA = Math.sin(angle);
 
     // 🎨 Dynamic Color for Each Radial
-    const hue = (frameCount * 2) % 360;
+    const hue = (frameCount * 24) % 360;
     ctx.strokeStyle = `hsl(${hue}, 100%, 70%)`;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = `hsl(${hue}, 100%, 8%)`;
+    ctx.shadowBlur = 100;
+    ctx.shadowColor = `hsl(${hue}, 100%, 12%)`;
+
+    const getWaveFactor = (normalizedT) =>
+      Math.sin(normalizedT * Math.PI) * Math.cos(normalizedT * Math.PI) * 1.2;
 
     // Draw positive wave
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
       const normalizedT = (i / numPoints) * 2 - 1;
-      const amplitude = (data[i] / 255) * maxRadius * 0.9;
+      const amplitude = (data[i] / 255) * maxRadius * 1.3;
       if (amplitude < 2) continue;
 
       const radialX = centerX + normalizedT * maxRadius * cosA;
       const radialY = centerY + normalizedT * maxRadius * sinA;
 
-      const waveX =
-        radialX - amplitude * Math.sin(normalizedT * Math.PI * 2) * sinA;
-      const waveY =
-        radialY + amplitude * Math.sin(normalizedT * Math.PI * 2) * cosA;
+      const waveX = radialX - amplitude * getWaveFactor(normalizedT) * sinA;
+      const waveY = radialY + amplitude * getWaveFactor(normalizedT) * cosA;
 
       if (i === 0) ctx.moveTo(waveX, waveY);
       else ctx.lineTo(waveX, waveY);
@@ -85,16 +86,14 @@ function drawVisualizer(data, frameCount) {
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
       const normalizedT = (i / numPoints) * 2 - 1;
-      const amplitude = (data[i] / 255) * maxRadius * 0.9;
+      const amplitude = (data[i] / 255) * maxRadius * 1.3;
       if (amplitude < 2) continue;
 
       const radialX = centerX + normalizedT * maxRadius * cosA;
       const radialY = centerY + normalizedT * maxRadius * sinA;
 
-      const waveX =
-        radialX + amplitude * Math.sin(normalizedT * Math.PI * 2) * sinA;
-      const waveY =
-        radialY - amplitude * Math.sin(normalizedT * Math.PI * 2) * cosA;
+      const waveX = radialX + amplitude * getWaveFactor(normalizedT) * sinA;
+      const waveY = radialY - amplitude * getWaveFactor(normalizedT) * cosA;
 
       if (i === 0) ctx.moveTo(waveX, waveY);
       else ctx.lineTo(waveX, waveY);
