@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>D3 Audio Visualizer</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+      body {
+        background: black;
+        margin: 0;
+        overflow: hidden;
+      }
+      svg {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="playButton">Start Audio</button>
+    <audio id="audio" src="audio/song.mp3" crossorigin="anonymous"></audio>
+    <script src="main.js"></script>
+  </body>
+</html>
