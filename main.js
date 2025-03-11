@@ -41,10 +41,14 @@ function drawVisualizer(data, frameCount) {
   const maxRadius = Math.min(centerX, centerY) * 0.6;
 
   // 🌟 Fading Effect (Before Drawing)
-  ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; // Low alpha for smooth fading
+  ctx.fillStyle = "rgba(0, 0, 0, 0)"; // Low alpha for smooth fading
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.shadowBlur = 15;
+  ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
 
   for (let j = 0; j < numRadials; j++) {
     const angle = (Math.PI * 2 * j) / numRadials;
@@ -52,14 +56,18 @@ function drawVisualizer(data, frameCount) {
     const sinA = Math.sin(angle);
 
     // 🎨 Dynamic Color for Each Radial
-    const hue = (frameCount * 2 + j * 60) % 360;
+    const hue = (frameCount * 2) % 360;
     ctx.strokeStyle = `hsl(${hue}, 100%, 60%)`;
+    ctx.shadowBlur = 15; // Increase for softer shadows
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)"; // Semi-transparent black
 
     // Draw positive wave
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
       const normalizedT = (i / numPoints) * 2 - 1;
-      const amplitude = (data[i] / 255) * maxRadius * 0.3;
+      const amplitude = (data[i] / 255) * maxRadius * 0.9;
+
+      if (amplitude < 2) continue; // 🚀 Skip low-amplitude waves
 
       const radialX = centerX + normalizedT * maxRadius * cosA;
       const radialY = centerY + normalizedT * maxRadius * sinA;
@@ -73,12 +81,17 @@ function drawVisualizer(data, frameCount) {
       else ctx.lineTo(waveX, waveY);
     }
     ctx.stroke();
+    ctx.strokeStyle = `hsl(${hue}, 100%, 60%)`;
+    ctx.shadowBlur = 15; // Increase for softer shadows
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)"; // Semi-transparent black
 
     // Draw negative wave
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
       const normalizedT = (i / numPoints) * 2 - 1;
-      const amplitude = (data[i] / 255) * maxRadius * 0.3;
+      const amplitude = (data[i] / 255) * maxRadius * 0.9;
+
+      if (amplitude < 2) continue; // 🚀 Skip low-amplitude waves
 
       const radialX = centerX + normalizedT * maxRadius * cosA;
       const radialY = centerY + normalizedT * maxRadius * sinA;
