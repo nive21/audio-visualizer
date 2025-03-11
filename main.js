@@ -20,45 +20,50 @@ playButton.addEventListener("click", () => {
   audioCtx.resume().then(() => {
     audio.play();
     playButton.style.display = "none";
-    animate();
+    animate(); // ✅ Start animation only after clicking play
   });
 });
 
-function animate() {
-  requestAnimationFrame(animate);
-  analyser.getByteFrequencyData(dataArray);
+let frameCount = 0; // Keep track of frames
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawVisualizer(dataArray);
+function animate() {
+  frameCount++; // Increment frame count each frame
+  analyser.getByteFrequencyData(dataArray); // ✅ Get live audio data
+  drawVisualizer(dataArray, frameCount); // ✅ Pass actual audio data
+  requestAnimationFrame(animate); // Keep looping
 }
 
-function drawVisualizer(data) {
+function drawVisualizer(data, frameCount) {
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
   const numPoints = data.length;
   const numRadials = 6;
   const maxRadius = Math.min(centerX, centerY) * 0.6;
 
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "#ffcc00";
+  // 🌟 Fading Effect (Before Drawing)
+  ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; // Low alpha for smooth fading
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw each radial line and its waves
+  ctx.lineWidth = 2;
+
   for (let j = 0; j < numRadials; j++) {
     const angle = (Math.PI * 2 * j) / numRadials;
     const cosA = Math.cos(angle);
     const sinA = Math.sin(angle);
 
+    // 🎨 Dynamic Color for Each Radial
+    const hue = (frameCount * 2 + j * 60) % 360;
+    ctx.strokeStyle = `hsl(${hue}, 100%, 60%)`;
+
     // Draw positive wave
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
-      const normalizedT = (i / numPoints) * 2 - 1; // -1 to 1
+      const normalizedT = (i / numPoints) * 2 - 1;
       const amplitude = (data[i] / 255) * maxRadius * 0.3;
 
-      // Calculate position along the radial line
       const radialX = centerX + normalizedT * maxRadius * cosA;
       const radialY = centerY + normalizedT * maxRadius * sinA;
 
-      // Add wave displacement perpendicular to the radial (positive side)
       const waveX =
         radialX - amplitude * Math.sin(normalizedT * Math.PI * 2) * sinA;
       const waveY =
@@ -72,14 +77,12 @@ function drawVisualizer(data) {
     // Draw negative wave
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
-      const normalizedT = (i / numPoints) * 2 - 1; // -1 to 1
+      const normalizedT = (i / numPoints) * 2 - 1;
       const amplitude = (data[i] / 255) * maxRadius * 0.3;
 
-      // Calculate position along the radial line
       const radialX = centerX + normalizedT * maxRadius * cosA;
       const radialY = centerY + normalizedT * maxRadius * sinA;
 
-      // Add wave displacement perpendicular to the radial (negative side)
       const waveX =
         radialX + amplitude * Math.sin(normalizedT * Math.PI * 2) * sinA;
       const waveY =
