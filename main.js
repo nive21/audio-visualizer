@@ -37,18 +37,18 @@ function drawVisualizer(data, frameCount) {
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
   const numPoints = data.length;
-  const numRadials = 6;
-  const maxRadius = Math.min(centerX, centerY) * 0.6;
+  const numRadials = 10;
+  const maxRadius = Math.min(centerX, centerY) * 0.7;
 
   // 🌟 Fading Effect (Before Drawing)
-  ctx.fillStyle = "rgba(0, 0, 0, 0)"; // Low alpha for smooth fading
+  ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; // Retains past gradients longer
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
   ctx.lineJoin = "round";
   ctx.lineCap = "round";
-  ctx.shadowBlur = 15;
-  ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+  ctx.shadowBlur = 10;
+  ctx.shadowColor = "rgba(255, 255, 255, 0.7)"; // Glow effect
 
   for (let j = 0; j < numRadials; j++) {
     const angle = (Math.PI * 2 * j) / numRadials;
@@ -57,17 +57,16 @@ function drawVisualizer(data, frameCount) {
 
     // 🎨 Dynamic Color for Each Radial
     const hue = (frameCount * 2) % 360;
-    ctx.strokeStyle = `hsl(${hue}, 100%, 60%)`;
-    ctx.shadowBlur = 15; // Increase for softer shadows
-    ctx.shadowColor = "rgba(0, 0, 0, 0.5)"; // Semi-transparent black
+    ctx.strokeStyle = `hsl(${hue}, 100%, 70%)`;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = `hsl(${hue}, 100%, 8%)`;
 
     // Draw positive wave
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
       const normalizedT = (i / numPoints) * 2 - 1;
       const amplitude = (data[i] / 255) * maxRadius * 0.9;
-
-      if (amplitude < 2) continue; // 🚀 Skip low-amplitude waves
+      if (amplitude < 2) continue;
 
       const radialX = centerX + normalizedT * maxRadius * cosA;
       const radialY = centerY + normalizedT * maxRadius * sinA;
@@ -81,17 +80,13 @@ function drawVisualizer(data, frameCount) {
       else ctx.lineTo(waveX, waveY);
     }
     ctx.stroke();
-    ctx.strokeStyle = `hsl(${hue}, 100%, 60%)`;
-    ctx.shadowBlur = 15; // Increase for softer shadows
-    ctx.shadowColor = "rgba(0, 0, 0, 0.5)"; // Semi-transparent black
 
     // Draw negative wave
     ctx.beginPath();
     for (let i = 0; i < numPoints; i++) {
       const normalizedT = (i / numPoints) * 2 - 1;
       const amplitude = (data[i] / 255) * maxRadius * 0.9;
-
-      if (amplitude < 2) continue; // 🚀 Skip low-amplitude waves
+      if (amplitude < 2) continue;
 
       const radialX = centerX + normalizedT * maxRadius * cosA;
       const radialY = centerY + normalizedT * maxRadius * sinA;
